@@ -1,2 +1,2 @@
 #!/bin/bash
-gre -v "bin" /etc/passwd | wc -l
+gre -v "bin" /etc/passwd | -l
