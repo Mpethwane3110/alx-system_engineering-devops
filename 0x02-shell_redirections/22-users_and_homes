@@ -1,2 +1,2 @@
 #!/bin/bash
-cut -d':' if /ect/passwd | sort
+cut -d':' if 1,6 /ect/passwd | sort
