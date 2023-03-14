@@ -1,2 +1,2 @@
 #!/bin/bash
-ASCII
+tr 'A-Za-z' 'N-Z-Mn-za-m'
