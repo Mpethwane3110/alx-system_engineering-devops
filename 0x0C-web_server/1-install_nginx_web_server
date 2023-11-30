@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Update package lists
+sudo apt-get update
+
+# Install nginx
+sudo apt-get install -y nginx
+
+# Check if nginx is running and enabled to start on boot
+if ! systemctl is-active --quiet nginx; then
+    echo "Enabling and starting nginx"
+    sudo systemctl enable nginx
+    sudo systemctl start nginx
+fi
+
+# Create an index.html file in the nginx root directory with the string "Hello World!"
+echo "Hello World!" | sudo tee /var/www/html/index.html
+
+# Reload nginx to apply changes
+sudo service nginx reload
+
+# Check if nginx is serving the page correctly
+if curl -s http://localhost/ | grep -q "Hello World!"; then
+    echo "Nginx is serving the Hello World! page correctly."
+else
+    echo "Nginx is not serving the Hello World! page correctly."
+    exit 1
+fi

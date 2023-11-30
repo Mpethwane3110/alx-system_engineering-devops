@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# 1- Install Nginx
+sudo apt-get update
+sudo apt-get install -y nginx
+
+# 2- Check Nginx configuration and fix errors
+sudo nginx -t
+sudo systemctl reload nginx
+
+# 3- Create the redirection configuration file
+sudo echo "
+server {
+    listen 80;
+    server_name _;
+
+    location /redirect_me {
+        return 301 /another_page;
+    }
+}
+" | sudo tee /etc/nginx/sites-available/redirect_me
+
+# Create a symbolic link to the sites-enabled directory
+sudo ln -s /etc/nginx/sites-available/redirect_me /etc/nginx/sites-enabled/
+
+# Restart nginx to apply changes
+sudo service nginx restart
+
+# Output the instructions to the user
+echo "Nginx redirection configuration complete."
+echo "To verify the redirection, visit http://<your_server_IP>/redirect_me in your web browser."
+echo "The browser should be redirected to http://<your_server_IP>/another_page."

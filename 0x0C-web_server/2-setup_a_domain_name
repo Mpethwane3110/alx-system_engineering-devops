@@ -1,0 +1,102 @@
+#!/bin/bash
+
+# Update package lists
+sudo apt-get update
+
+# Install nginx
+sudo apt-get install -y nginx
+
+# Check if nginx is running and enabled to start on boot
+if ! systemctl is-active --quiet nginx; then
+    echo "Enabling and starting nginx"
+    sudo systemctl enable nginx
+    sudo systemctl start nginx
+fi
+
+# Create an index.html file in the nginx root directory with the string "Hello World!"
+echo "Hello World!" | sudo tee /var/www/html/index.html
+
+# Reload nginx to apply changes
+sudo service nginx reload
+
+# Check if nginx is serving the page correctly
+if curl -s http://localhost/ | grep -q "Hello World!"; then
+    echo "Nginx is serving the Hello World! page correctly."
+else
+    echo "Nginx is not serving the Hello World! page correctly."
+    exit 1
+fi
+
+# Get domain name from user
+echo "Please enter your .TECH domain name:"
+read domain_name
+
+# Replace . with - to ensure valid DNS entry
+dns_entry=$(echo "$domain_name" | tr . -)
+
+# Create A record in DNS configuration file
+sudo echo "server {
+    listen 80;
+    server_name $domain_name www.$domain_name;
+
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+}
+
+# Replace www.example.com with your actual domain
+server {
+    listen 80;
+    server_name www.$domain_name;
+    return 301 http://$domain_name\$request_uri;
+}
+
+# This server block redirects all HTTP requests to HTTPS
+server {
+    listen 80;
+    server_name $domain_name;
+    return 301 https://$domain_name\$request_uri;
+}
+
+# Redirect any other HTTPS traffic to the www version of your domain
+server {
+    listen 443 ssl;
+    server_name $domain_name;
+    ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+    return 301 https://www.$domain_name\$request_uri;
+}
+
+# Server block to handle HTTPS requests for the www subdomain
+server {
+    listen 443 ssl;
+    server_name www.$domain_name;
+
+    ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+}
+
+" | sudo tee /etc/nginx/sites-available/$dns_entry
+
+# Create a symbolic link to the sites-enabled directory
+sudo ln -s /etc/nginx/sites-available/$dns_entry /etc/nginx/sites-enabled/
+
+# Restart nginx to apply changes
+sudo service nginx restart
+
+# Output the instructions to the user
+echo "DNS configuration complete."
+echo "Please go to your domain registrar and create an A record pointing to your web-01 IP address."
+echo "Ensure that the record has a TTL (Time-to-Live) of at least 300 seconds for faster propagation."
+echo "Once the record has been created and propagated, your website will be accessible at http://$domain_name and https://$domain_name."
+echo "To add HTTPS functionality, obtain an SSL certificate from a Certificate Authority and configure nginx to use it."
