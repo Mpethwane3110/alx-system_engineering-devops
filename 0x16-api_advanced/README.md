@@ -1,1 +1,1 @@
-API  Advanced
+API Advanced
