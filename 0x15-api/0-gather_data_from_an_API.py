@@ -1,16 +1,25 @@
 #!/usr/bin/python3
-"""Generate a Todo list for a given employee id"""
+"""gets api"""
 import requests
 from sys import argv
 
+
+def todo(userid):
+    """doc stringed"""
+    name = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}'.format(
+            userid)).json().get('name')
+    tasks = requests.get(
+        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(
+            userid)).json()
+    tasksDone = ['\t {}\n'.format(dic.get('title')) for dic in tasks
+                 if dic.get('completed')]
+    if name and tasks:
+        print("Employee {} is done with tasks({}/{}):".format
+              (name, len(tasksDone), len(tasks)))
+        print(''.join(tasksDone), end='')
+
+
 if __name__ == "__main__":
-    url = "https://jsonplaceholder.typicode.com/"
-    id = argv[1]
-
-    user = requests.get(url + f"users/{id}").json()
-    todos = requests.get(url + f"todos", params={"userId": id}).json()
-
-    tasks = [i["title"] for i in todos if i["completed"]]
-    print(f"Employee {user.get('name')} is done with ", end="")
-    print(f"tasks({len(tasks)}/{len(todos)}):")
-    [print(f"\t {i}") for i in tasks]
+    if len(argv) == 2:
+        todo(int(argv[1]))
