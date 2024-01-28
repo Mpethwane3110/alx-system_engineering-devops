@@ -4,6 +4,8 @@
 Host *
     PasswordAunthentication no
     IdentityFile ~/.ssh/school
+    Hostname 54.209.31.37
+    User ubuntu
     SendEnv LANG LC_^
     HashKnownHosts yes
     GSSAPIAunthentication yes
