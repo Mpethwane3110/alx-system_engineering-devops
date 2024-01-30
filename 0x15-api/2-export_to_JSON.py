@@ -1,23 +1,27 @@
 #!/usr/bin/python3
-# csv exported
+# Using what you did in the task #0, extend your Python
+# script to export data in the JSON format.
+
 import json
-from requests import get
-from sys import argv
-
-
-def jsonWrite(user):
-    """writes to csv"""
-    data = get('https://jsonplaceholder.typicode.com/todos?userId={}'.format(
-        user)).json()
-    name = get('https://jsonplaceholder.typicode.com/users/{}'.format(
-        user)).json().get('username')
-    ordered = []
-    for line in data:
-        ordered.append({"task": line.get('title'), "completed":
-                        line.get('completed'), "username": name})
-    with open('{}.json'.format(user), 'w') as f:
-        json.dump({user: ordered}, f)
+import requests
+import sys
 
 
 if __name__ == "__main__":
-    jsonWrite(int(argv[1]))
+    USER_ID = sys.argv[1]
+    jsonplaceholder = 'https://jsonplaceholder.typicode.com/users'
+    url = jsonplaceholder + '/' + USER_ID
+    response = requests.get(url)
+    username = response.json().get('username')
+    todo_url = url + '/todos'
+    response = requests.get(todo_url)
+    tasks = response.json()
+    dict = {USER_ID: []}
+    for task in tasks:
+        dict[USER_ID].append({
+            "task": task.get("title"),
+            "completed": task.get("completed"),
+            "username": username
+        })
+        with open('{}.json'.format(USER_ID), 'w') as f:
+            json.dump(dict, f)
