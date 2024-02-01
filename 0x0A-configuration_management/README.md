@@ -7,4 +7,8 @@ Config Management
   * File permission is 0744
   * File owner is www-data
   * File group is www-data
- File contains I love Puppet
+  * File contains I love Puppet
+
+* **1. Install a package
+  * [1-install_a_package.pp](./1-install_a_package.pp): puppet manifest file
+that install 'flask' from pip3
